@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>planetify</title>
+  <link rel="stylesheet" href="static/style.css" />
+</head>
+
+<script src="universe.js"></script>
+<script>
+window.onload = function() {
+  // Show loading visualizer while fetching data
+  showLoadingVisualizer();
+  
+  // Get access token from sessionStorage
+  const accessToken = localStorage.getItem('spotify_access_token');
+  if (!accessToken) {
+    console.error('No access token found in sessionStorage.');
+    hideLoadingVisualizer();
+    return;
+  }
+  fetch('http://127.0.0.1:5000/get_data', {
+    headers: {
+      'Authorization': 'Bearer ' + accessToken
+    }
+  })
+    .then(res => res.json())
+    .then(data => {
+      console.log(data); // Use the data here
+      renderUniverse(data); // This function will be loaded from universe.js
+    })
+    .catch(error => {
+      console.error('Error fetching data:', error);
+      hideLoadingVisualizer();
+    });
+};
+</script>
+
+<body style="margin: 0; padding: 0; overflow: hidden;">
+</body>
+</html>
+  

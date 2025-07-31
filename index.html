@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>planetify</title>
+  <link rel="stylesheet" href="static/style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>planetify</h1>
+    <div id="user-info" style="margin-bottom: 20px; display:none;">
+    <a href="#" id="logout-link" class="logout-link">log out</a></span>
+    </div>
+    <button id="login-btn" onclick="loginWithSpotify()">Log in</button>
+  </div>
+
+  <script src="spotifyAuth.js"></script>
+  <script>
+    // Show/hide user info section only if user is logged in
+    function showUserInfo(isLoggedIn) {
+      const userInfo = document.getElementById('user-info');
+      if (userInfo) {
+        userInfo.style.display = isLoggedIn ? '' : 'none';
+      }
+    }
+    window.showUserInfo = showUserInfo;
+  </script>
+  <script>
+    // Show logout link only if user is logged in
+    function showLogoutLink(isLoggedIn) {
+      const logoutLink = document.getElementById('logout-link');
+      if (logoutLink) {
+        logoutLink.style.display = isLoggedIn ? '' : 'none';
+      }
+    }
+    window.showLogoutLink = showLogoutLink;
+  </script>
+</body>
+</html>

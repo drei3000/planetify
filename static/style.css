@@ -1,0 +1,276 @@
+/* Logout link/button style */
+.logout-link {
+  color: #008cff;
+  margin-left: 10px;
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+.logout-link:hover {
+  color: #005fa3;
+  text-decoration: none;
+}
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: url("images/Space Background.png");
+  background-size: cover;
+  color: white;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  text-align: center;
+  background-color: rgba(0, 0, 0, 0.5); /* Optional: dark overlay */
+}
+
+button {
+  padding: 15px 30px;
+  font-size: 1.2rem;
+  margin-top: 20px;
+  background-color: #1DB954;
+  color: white;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+button:hover {
+  background-color: #1ed760;
+}
+
+/* Universe Loading Visualizer */
+.universe-loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.loading-spinner {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, #667eea, #764ba2, #667eea);
+  background-size: 200% 200%;
+  animation: spin 2s linear infinite, pulse 1.5s ease-in-out infinite alternate;
+  box-shadow: 0 0 30px rgba(102, 126, 234, 0.5);
+  margin-bottom: 20px;
+}
+
+.loading-text {
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+  animation: fade 1.5s ease-in-out infinite alternate;
+}
+
+/* Planet Styles */
+.planet {
+  position: absolute;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  background-size: cover;
+  background-position: center;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+}
+
+.planet:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.6);
+}
+
+/* Artist Info Label */
+.artist-info-label {
+  position: fixed;
+  top: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  font-size: 36px;
+  font-weight: bold;
+  text-align: center;
+  z-index: 1000;
+  text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
+}
+
+/* Planet Labels */
+.planet-label {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  font-size: 12px;
+  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+}
+
+/* Blank Modal */
+.blank-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.blank-modal-content {
+  width: 65vw;
+  height: 75vh;
+  background: rgba(20, 20, 30, 0.95);
+  border-radius: 15px;
+  padding: 30px;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255,255,255,0.2);
+  border: 2px solid white;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.3s ease;
+}
+
+.modal-close-btn:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+/* Comparison Modal Styles */
+.comparison-title {
+  color: white;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.comparison-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 70%;
+  position: relative;
+  gap: 60px;
+  padding: 0 40px;
+}
+
+.planet-comparison-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-width: 300px;
+  max-width: 400px;
+  position: relative;
+}
+
+.planet-comparison-container.bigger {
+  flex: 1.2;
+}
+
+.planet-comparison-container.smaller {
+  flex: 1;
+}
+
+.comparison-planet {
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+  margin: 20px auto;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.artist-name {
+  color: white;
+  text-align: center;
+  margin: 15px 0 10px 0;
+  font-size: 1.4em;
+  font-weight: bold;
+}
+
+.artist-scrobbles {
+  color: rgba(255,255,255,0.8);
+  text-align: center;
+  margin: 8px 0;
+  font-size: 1.1em;
+}
+
+.size-indicator {
+  color: rgba(255,255,255,0.6);
+  text-align: center;
+  font-size: 0.9em;
+  margin: 8px 0;
+  font-style: italic;
+}
+
+.selection-container {
+  text-align: center;
+  margin-top: 40px;
+}
+
+.selection-label {
+  color: white;
+  margin-right: 10px;
+}
+
+.artist-dropdown {
+  padding: 5px 10px;
+  border-radius: 5px;
+  background: rgba(255,255,255,0.2);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.3);
+}
+
+.artist-dropdown option {
+  background: #333;
+}
+
+/* Animations */
+@keyframes spin {
+  0% { transform: rotate(0deg); background-position: 0% 50%; }
+  100% { transform: rotate(360deg); background-position: 100% 50%; }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.1); }
+}
+
+@keyframes fade {
+  0% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
