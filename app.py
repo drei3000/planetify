@@ -52,7 +52,8 @@ def serve_js_files(filename):
 @app.route('/callback')
 def callback():
     code = request.args.get('code') # Get the authorization code from the request
-    print(f"Received callback with code: {code[:20]}...")  # Log first 20 chars of code
+    print(f"Received callback with code: {code[:20] if code else 'None'}...")  # Log first 20 chars of code
+    print(f"SPOTIFY_REDIRECT_URI environment variable: {SPOTIFY_REDIRECT_URI}")
     
     if not code:
         print("Error: No code provided")
@@ -71,6 +72,7 @@ def callback():
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
     
     print(f"Making request to Spotify with redirect_uri: {SPOTIFY_REDIRECT_URI}")
+    print(f"Payload: {payload}")
     response = requests.post(token_url, data=payload, headers=headers) # Make the POST request to get the token
     
     print(f"Spotify response status: {response.status_code}")
