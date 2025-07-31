@@ -1,6 +1,6 @@
 import os
 import requests
-from flask import Flask, request, jsonify, send_from_directory, render_template_string
+from flask import Flask, request, jsonify, send_from_directory, render_template_string, redirect
 from dotenv import load_dotenv
 from flask_cors import CORS
 import spotipy
@@ -84,6 +84,14 @@ def debug():
 def callback():
     code = request.args.get('code') # Get the authorization code from the request
     print(f"Received callback with code: {code[:20] if code else 'None'}...")  # Log first 20 chars of code
+    
+    # If this is a browser redirect from Spotify (no fetch request), redirect to main page with code
+    # The JavaScript will handle the token exchange
+    if 'application/json' not in request.headers.get('Accept', ''):
+        print("Browser redirect from Spotify - redirecting to main page with code")
+        return redirect(f'/?code={code}')
+    
+    # This is a fetch request from JavaScript - handle token exchange
     print(f"SPOTIFY_REDIRECT_URI environment variable: {SPOTIFY_REDIRECT_URI}")
     print(f"Request URL: {request.url}")
     print(f"Request base URL: {request.base_url}")
