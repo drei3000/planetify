@@ -10,10 +10,15 @@ function getQueryParam(name) {
     return urlParams.get(name);
 }
 
+// Get the current base URL (works for both local and production)
+function getBaseURL() {
+    return window.location.origin;
+}
+
 // Exchange authorization code for access token
 async function exchangeCodeForToken(code) {
     try {
-        const response = await fetch(`http://127.0.0.1:5000/callback?code=${code}`); // Go to backend to exchange code
+        const response = await fetch(`${getBaseURL()}/callback?code=${code}`); // Use dynamic URL
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -44,7 +49,7 @@ async function loginWithSpotify() {
     const authURL = 'https://accounts.spotify.com/authorize' +
         '?client_id=48969b5b85f64a4da9c58589461cd743' +
         '&response_type=code' +
-        '&redirect_uri=http://127.0.0.1:8888/' +
+        `&redirect_uri=${encodeURIComponent(getBaseURL() + '/callback')}` +
         '&scope=user-top-read';
    
     window.location.href = authURL; // Redirect to Spotify for authorization
