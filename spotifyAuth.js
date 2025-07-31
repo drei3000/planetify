@@ -35,8 +35,8 @@ async function exchangeCodeForToken(code) {
     }
 }
 
-// Main login function
-async function loginWithSpotify() {
+// Main login function - make it global so HTML onclick can find it
+window.loginWithSpotify = async function() {
     
     // If we already have a token, go to universe - happens when button is clicked after login
     if (hasValidToken()) {
@@ -111,7 +111,8 @@ window.onload = function() {
     } else {
         // Set up login button for normal cases
         if (loginBtn) {
-            loginBtn.onclick = loginWithSpotify;
+            // Don't assign onclick here since HTML already has it
+            // loginBtn.onclick = loginWithSpotify;
             // Set initial button text
             if (hasValidToken()) {
                 loginBtn.textContent = 'explore your spotify universe';
