@@ -94,16 +94,15 @@ window.onload = function() {
         // Get the token
         exchangeCodeForToken(code)
             .then(() => {
-                console.log('Token exchange successful, cleaning up URL');
+                console.log('Token exchange successful, redirecting to universe page');
                 // Clean up URL immediately
                 const url = new URL(window.location);
                 url.searchParams.delete('code');
                 url.searchParams.delete('state'); // Also remove state if present
                 window.history.replaceState({}, document.title, url.toString());
-                // Update button text but DON'T redirect automatically
-                if (loginBtn) loginBtn.textContent = 'explore your spotify universe';
-                if (userInfo) userInfo.style.display = 'block';
-                console.log('URL cleaned up successfully');
+                // Automatically redirect to universe page after successful authentication
+                console.log('Redirecting to /universe');
+                window.location.href = '/universe';
             })
             .catch(error => {
                 console.error('Auto token exchange failed:', error);
