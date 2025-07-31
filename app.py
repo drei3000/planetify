@@ -57,6 +57,7 @@ def serve_js_files(filename):
     return "Not found", 404
 
 
+
 @app.route('/callback')
 def callback():
     code = request.args.get('code') # Get the authorization code from the request
@@ -75,9 +76,14 @@ def callback():
     
     
     # Use dynamic redirect URI to match what JavaScript sent
+    # Force HTTPS for Railway production
     url_root = request.url_root
+    if 'railway.app' in request.host:
+        url_root = url_root.replace('http://', 'https://')
     
     dynamic_redirect_uri = url_root.rstrip('/') + '/callback'
+    print(f"Dynamic redirect URI: {dynamic_redirect_uri}")
+    
     if not code:
         print("Error: No code provided")
         return jsonify({'error': 'No code provided'}), 400
