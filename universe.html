@@ -13,14 +13,23 @@ window.onload = function() {
   // Show loading visualizer while fetching data
   showLoadingVisualizer();
   
-  // Get access token from sessionStorage
+  // Get access token from localStorage
   const accessToken = localStorage.getItem('spotify_access_token');
+  console.log('Universe page - checking for access token:', accessToken ? 'Found' : 'Not found');
+  
   if (!accessToken) {
-    console.error('No access token found in sessionStorage.');
+    console.error('No access token found in localStorage.');
     hideLoadingVisualizer();
+    alert('Please log in first');
+    window.location.href = '/';
     return;
   }
-  fetch('http://127.0.0.1:5000/get_data', {
+  
+  // Use dynamic URL for production compatibility
+  const baseURL = window.location.origin;
+  console.log('Fetching data from:', baseURL + '/get_data');
+  
+  fetch(baseURL + '/get_data', {
     headers: {
       'Authorization': 'Bearer ' + accessToken
     }

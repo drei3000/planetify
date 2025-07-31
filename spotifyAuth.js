@@ -1,6 +1,7 @@
 // Simple function to check if we have a valid token
 function hasValidToken() {
     const token = localStorage.getItem('spotify_access_token');
+    console.log('Checking token:', token ? 'Token exists' : 'No token found');
     return token && token.length > 0;
 }
 
@@ -24,7 +25,9 @@ async function exchangeCodeForToken(code) {
         }
         const data = await response.json(); // wait for json response containing the token
         if (data.access_token) {
+            console.log('Storing access token in localStorage');
             localStorage.setItem('spotify_access_token', data.access_token); // store token
+            console.log('Token stored successfully');
             return data.access_token;
         } else {
             throw new Error('No access token in response');
@@ -40,7 +43,7 @@ window.loginWithSpotify = async function() {
     
     // If we already have a token, go to universe - happens when button is clicked after login
     if (hasValidToken()) {
-        window.location.href = 'universe.html';
+        window.location.href = '/universe'; // Use Flask route instead of universe.html
         return;
     }
     
