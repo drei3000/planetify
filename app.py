@@ -51,12 +51,20 @@ def serve_js_files(filename):
 
 @app.route('/debug')
 def debug():
+    # Force HTTPS for Railway production
+    url_root = request.url_root
+    if 'railway.app' in request.host:
+        url_root = url_root.replace('http://', 'https://')
+    
+    expected_callback = url_root.rstrip('/') + '/callback'
+    
     return jsonify({
         'base_url': request.base_url,
         'url_root': request.url_root,
         'host_url': request.host_url,
+        'corrected_url_root': url_root,
         'SPOTIFY_REDIRECT_URI': SPOTIFY_REDIRECT_URI,
-        'expected_callback': request.url_root.rstrip('/') + '/callback'
+        'expected_callback': expected_callback
     })
 
 @app.route('/callback')
@@ -68,7 +76,12 @@ def callback():
     print(f"Request base URL: {request.base_url}")
     
     # Use dynamic redirect URI to match what JavaScript sent
-    dynamic_redirect_uri = request.url_root.rstrip('/') + '/callback'
+    # Force HTTPS for Railway production
+    url_root = request.url_root
+    if 'railway.app' in request.host:
+        url_root = url_root.replace('http://', 'https://')
+    
+    dynamic_redirect_uri = url_root.rstrip('/') + '/callback'
     print(f"Dynamic redirect URI: {dynamic_redirect_uri}")
     
     if not code:
