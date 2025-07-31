@@ -91,24 +91,37 @@ window.onload = function() {
         // Get the token
         exchangeCodeForToken(code)
             .then(() => {
-                // Clean up URL
+                console.log('Token exchange successful, cleaning up URL');
+                // Clean up URL immediately
                 const url = new URL(window.location);
                 url.searchParams.delete('code');
-                window.history.replaceState({}, document.title, url.pathname);
+                url.searchParams.delete('state'); // Also remove state if present
+                window.history.replaceState({}, document.title, url.toString());
                 // Update button text but DON'T redirect automatically
                 if (loginBtn) loginBtn.textContent = 'explore your spotify universe';
                 if (userInfo) userInfo.style.display = 'block';
+                console.log('URL cleaned up successfully');
             })
             .catch(error => {
                 console.error('Auto token exchange failed:', error);
                 if (loginBtn) loginBtn.textContent = 'Login failed - try again';
-                // Clear any stale data and reset
+                // Clear any stale data and reset - also clean URL
                 localStorage.removeItem('spotify_access_token');
                 const url = new URL(window.location);
                 url.searchParams.delete('code');
-                window.history.replaceState({}, document.title, url.pathname);
+                url.searchParams.delete('state');
+                window.history.replaceState({}, document.title, url.toString());
             });
     } else {
+        // Clean up URL if we already have a token but there's still a code in the URL
+        if (code && hasValidToken()) {
+            console.log('Already have token, cleaning up URL');
+            const url = new URL(window.location);
+            url.searchParams.delete('code');
+            url.searchParams.delete('state');
+            window.history.replaceState({}, document.title, url.toString());
+        }
+        
         // Set up login button for normal cases
         if (loginBtn) {
             // Don't assign onclick here since HTML already has it
