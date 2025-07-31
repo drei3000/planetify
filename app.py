@@ -67,6 +67,10 @@ def callback():
     print(f"Request URL: {request.url}")
     print(f"Request base URL: {request.base_url}")
     
+    # Use dynamic redirect URI to match what JavaScript sent
+    dynamic_redirect_uri = request.url_root.rstrip('/') + '/callback'
+    print(f"Dynamic redirect URI: {dynamic_redirect_uri}")
+    
     if not code:
         print("Error: No code provided")
         return jsonify({'error': 'No code provided'}), 400
@@ -77,13 +81,13 @@ def callback():
     payload = {
         'grant_type': 'authorization_code',
         'code': code,
-        'redirect_uri': SPOTIFY_REDIRECT_URI,
+        'redirect_uri': dynamic_redirect_uri,  # Use dynamic URI instead of env variable
         'client_id': SPOTIFY_CLIENT_ID,
         'client_secret': SPOTIFY_CLIENT_SECRET
     }
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
     
-    print(f"Making request to Spotify with redirect_uri: {SPOTIFY_REDIRECT_URI}")
+    print(f"Making request to Spotify with redirect_uri: {dynamic_redirect_uri}")
     print(f"Payload redirect_uri: {payload['redirect_uri']}")
     response = requests.post(token_url, data=payload, headers=headers) # Make the POST request to get the token
     
