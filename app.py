@@ -7,7 +7,6 @@ import spotipy
 
 load_dotenv()
 
-
 app = Flask(__name__)
 CORS(app)
 
@@ -62,31 +61,12 @@ def serve_js_files(filename):
     return "Not found", 404
 
 
-@app.route('/debug')
-def debug():
-    # Force HTTPS for Railway production
-    url_root = request.url_root
-    if 'railway.app' in request.host:
-        url_root = url_root.replace('http://', 'https://')
-    
-    expected_callback = url_root.rstrip('/') + '/callback'
-    
-    return jsonify({
-        'base_url': request.base_url,
-        'url_root': request.url_root,
-        'host_url': request.host_url,
-        'corrected_url_root': url_root,
-        'SPOTIFY_REDIRECT_URI': SPOTIFY_REDIRECT_URI,
-        'expected_callback': expected_callback
-    })
+ 
 
 @app.route('/callback')
 def callback():
     code = request.args.get('code') # Get the authorization code from the request
-    print(f"Received callback with code: {code[:20] if code else 'None'}...")  # Log first 20 chars of code
-    print(f"Request headers: {dict(request.headers)}")
-    print(f"Request method: {request.method}")
-    
+     
     # Check if this is a fetch request by looking for specific fetch headers
     is_fetch_request = (
         'application/json' in request.headers.get('Accept', '') or
@@ -95,17 +75,10 @@ def callback():
         request.args.get('fetch') == 'true'  # Add explicit parameter
     )
     
-    print(f"Is fetch request: {is_fetch_request}")
-    
     # If this is a browser redirect from Spotify (not a fetch request), redirect to main page with code
     if not is_fetch_request:
-        print("Browser redirect from Spotify - redirecting to main page with code")
         return redirect(f'/?code={code}')
     
-    # This is a fetch request from JavaScript - handle token exchange
-    print(f"SPOTIFY_REDIRECT_URI environment variable: {SPOTIFY_REDIRECT_URI}")
-    print(f"Request URL: {request.url}")
-    print(f"Request base URL: {request.base_url}")
     
     # Use dynamic redirect URI to match what JavaScript sent
     # Force HTTPS for Railway production
@@ -130,15 +103,11 @@ def callback():
         'client_id': SPOTIFY_CLIENT_ID,
         'client_secret': SPOTIFY_CLIENT_SECRET
     }
+
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-    
-    print(f"Making request to Spotify with redirect_uri: {dynamic_redirect_uri}")
-    print(f"Payload redirect_uri: {payload['redirect_uri']}")
+ 
     response = requests.post(token_url, data=payload, headers=headers) # Make the POST request to get the token
     
-    print(f"Spotify response status: {response.status_code}")
-    print(f"Spotify response: {response.text}")
-
     if response.status_code != 200:
         return jsonify({'error': 'Failed to get token', 'details': response.json()}), 400
 
@@ -170,10 +139,6 @@ def get_last_fm_scrobble_count(artist_name):
         return int(playcount) if playcount else 0
     return 0
 
-
-
-
-
 # Download and save image locally
 def download_image(image_url, artist_name):
     if not image_url:
@@ -204,7 +169,6 @@ def download_image(image_url, artist_name):
     return None
 
  
-
 # Get info from spotify API
 def get_current_user_artists():
     sp = create_spotify_client()
