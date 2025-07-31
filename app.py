@@ -18,17 +18,27 @@ SPOTIFY_REDIRECT_URI = os.getenv('SPOTIFY_REDIRECT_URI', 'http://127.0.0.1:8888/
 # Get the port from environment variable or default to 5000
 PORT = int(os.environ.get('PORT', 5000))
 
+@app.route('/health')
+def health():
+    return jsonify({'status': 'healthy', 'app': 'spotiplanets'})
+
 @app.route('/')
 def index():
     # Serve the main index.html file
-    with open('index.html', 'r') as f:
-        return f.read()
+    try:
+        with open('index.html', 'r', encoding='utf-8') as f:
+            return f.read()
+    except FileNotFoundError:
+        return "index.html not found", 404
 
 @app.route('/universe')
 def universe():
     # Serve the universe.html file
-    with open('universe.html', 'r') as f:
-        return f.read()
+    try:
+        with open('universe.html', 'r', encoding='utf-8') as f:
+            return f.read()
+    except FileNotFoundError:
+        return "universe.html not found", 404
 
 @app.route('/static/<path:filename>')
 def static_files(filename):
@@ -38,13 +48,16 @@ def static_files(filename):
 def serve_js_files(filename):
     # Serve JavaScript files from the root directory
     if filename.endswith('.js'):
-        with open(filename, 'r') as f:
-            response = app.response_class(
-                response=f.read(),
-                status=200,
-                mimetype='application/javascript'
-            )
-            return response
+        try:
+            with open(filename, 'r', encoding='utf-8') as f:
+                response = app.response_class(
+                    response=f.read(),
+                    status=200,
+                    mimetype='application/javascript'
+                )
+                return response
+        except FileNotFoundError:
+            return f"{filename} not found", 404
     # For other files, return 404
     return "Not found", 404
 
