@@ -34,6 +34,20 @@ def universe():
 def static_files(filename):
     return send_from_directory('static', filename)
 
+@app.route('/<path:filename>')
+def serve_js_files(filename):
+    # Serve JavaScript files from the root directory
+    if filename.endswith('.js'):
+        with open(filename, 'r') as f:
+            response = app.response_class(
+                response=f.read(),
+                status=200,
+                mimetype='application/javascript'
+            )
+            return response
+    # For other files, return 404
+    return "Not found", 404
+
 
 @app.route('/callback')
 def callback():
