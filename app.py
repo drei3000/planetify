@@ -17,10 +17,6 @@ SPOTIFY_REDIRECT_URI = os.getenv('SPOTIFY_REDIRECT_URI', 'http://127.0.0.1:8888/
 # Get the port from environment variable or default to 5000
 PORT = int(os.environ.get('PORT', 5000))
 
-@app.route('/health')
-def health():
-    return jsonify({'status': 'healthy', 'app': 'spotiplanets'})
-
 @app.route('/')
 def index():
     # Serve the main index.html file
@@ -61,8 +57,6 @@ def serve_js_files(filename):
     return "Not found", 404
 
 
- 
-
 @app.route('/callback')
 def callback():
     code = request.args.get('code') # Get the authorization code from the request
@@ -81,14 +75,9 @@ def callback():
     
     
     # Use dynamic redirect URI to match what JavaScript sent
-    # Force HTTPS for Railway production
     url_root = request.url_root
-    if 'railway.app' in request.host:
-        url_root = url_root.replace('http://', 'https://')
     
     dynamic_redirect_uri = url_root.rstrip('/') + '/callback'
-    print(f"Dynamic redirect URI: {dynamic_redirect_uri}")
-    
     if not code:
         print("Error: No code provided")
         return jsonify({'error': 'No code provided'}), 400
