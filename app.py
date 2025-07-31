@@ -1,6 +1,6 @@
 import os
 import requests
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory, render_template_string
 from dotenv import load_dotenv
 from flask_cors import CORS
 import spotipy
@@ -17,6 +17,22 @@ SPOTIFY_REDIRECT_URI = os.getenv('SPOTIFY_REDIRECT_URI', 'http://127.0.0.1:8888/
 
 # Get the port from environment variable or default to 5000
 PORT = int(os.environ.get('PORT', 5000))
+
+@app.route('/')
+def index():
+    # Serve the main index.html file
+    with open('index.html', 'r') as f:
+        return f.read()
+
+@app.route('/universe')
+def universe():
+    # Serve the universe.html file
+    with open('universe.html', 'r') as f:
+        return f.read()
+
+@app.route('/static/<path:filename>')
+def static_files(filename):
+    return send_from_directory('static', filename)
 
 
 @app.route('/callback')
