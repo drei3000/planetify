@@ -84,10 +84,21 @@ def debug():
 def callback():
     code = request.args.get('code') # Get the authorization code from the request
     print(f"Received callback with code: {code[:20] if code else 'None'}...")  # Log first 20 chars of code
+    print(f"Request headers: {dict(request.headers)}")
+    print(f"Request method: {request.method}")
     
-    # If this is a browser redirect from Spotify (no fetch request), redirect to main page with code
-    # The JavaScript will handle the token exchange
-    if 'application/json' not in request.headers.get('Accept', ''):
+    # Check if this is a fetch request by looking for specific fetch headers
+    is_fetch_request = (
+        'application/json' in request.headers.get('Accept', '') or
+        request.headers.get('X-Requested-With') == 'XMLHttpRequest' or
+        'fetch' in request.headers.get('Sec-Fetch-Mode', '').lower() or
+        request.args.get('fetch') == 'true'  # Add explicit parameter
+    )
+    
+    print(f"Is fetch request: {is_fetch_request}")
+    
+    # If this is a browser redirect from Spotify (not a fetch request), redirect to main page with code
+    if not is_fetch_request:
         print("Browser redirect from Spotify - redirecting to main page with code")
         return redirect(f'/?code={code}')
     

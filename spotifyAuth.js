@@ -19,7 +19,7 @@ function getBaseURL() {
 // Exchange authorization code for access token
 async function exchangeCodeForToken(code) {
     try {
-        const response = await fetch(`${getBaseURL()}/callback?code=${code}`); // Use dynamic URL
+        const response = await fetch(`${getBaseURL()}/callback?code=${code}&fetch=true`); // Add fetch parameter
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
