@@ -1,4 +1,4 @@
-# Spotiplanets - Music Universe Visualization
+# Planetify - Music Universe Visualization
 
 A web application that visualizes your Spotify listening history as planets in a universe, sized by Last.fm scrobble counts.
 
