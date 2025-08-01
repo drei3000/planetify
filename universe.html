@@ -13,12 +13,12 @@ window.onload = function() {
   // Show loading visualizer while fetching data
   showLoadingVisualizer();
   
-  // Get access token from localStorage
-  const accessToken = localStorage.getItem('spotify_access_token');
+  // Get access token from sessionStorage
+  const accessToken = sessionStorage.getItem('spotify_access_token');
   console.log('Universe page - checking for access token:', accessToken ? 'Found' : 'Not found');
   
   if (!accessToken) {
-    console.error('No access token found in localStorage.');
+    console.error('No access token found in sessionStorage.');
     hideLoadingVisualizer();
     alert('Please log in first');
     window.location.href = '/';

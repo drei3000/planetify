@@ -1,7 +1,7 @@
 // Simple function to check if we have a valid token
 function hasValidToken() {
-    const token = localStorage.getItem('spotify_access_token');
-    console.log('Checking token:', token ? 'Token exists' : 'No token found');
+    const token = sessionStorage.getItem('spotify_access_token');
+    console.log('Checking token:', token ? 'Token exists in session' : 'No token found in session');
     return token && token.length > 0;
 }
 
@@ -42,9 +42,9 @@ async function exchangeCodeForToken(code) {
         console.log('Token exchange response received');
         
         if (data.access_token) {
-            console.log('Storing access token in localStorage');
-            localStorage.setItem('spotify_access_token', data.access_token); // store token
-            console.log('Token stored successfully');
+            console.log('Storing access token in sessionStorage');
+            sessionStorage.setItem('spotify_access_token', data.access_token); // store token in session
+            console.log('Token stored successfully in session');
             return data.access_token;
         } else {
             console.error('No access token in response:', data);
@@ -119,6 +119,9 @@ window.loginWithSpotify = async function() {
 
 // Logout function
 function logoutSpotifyUser() {
+    // Clear session token
+    sessionStorage.removeItem('spotify_access_token');
+    // Also clear any localStorage token that might exist from before
     localStorage.removeItem('spotify_access_token');
     // Clean up URL if it has a code
     if (window.location.search.includes('code=')) {
@@ -167,6 +170,7 @@ window.onload = function() {
                 console.error('Auto token exchange failed:', error);
                 if (loginBtn) loginBtn.textContent = 'Login failed - try again';
                 // Clear any stale data and reset - also clean URL
+                sessionStorage.removeItem('spotify_access_token');
                 localStorage.removeItem('spotify_access_token');
                 const url = new URL(window.location);
                 url.searchParams.delete('code');
