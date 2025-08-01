@@ -1,6 +1,6 @@
 # Planetify - Music Universe Visualization
 
-A web application that visualizes your Spotify listening history as planets in a universe, sized by Last.fm scrobble counts.
+Inspired by Neal.fun - The size of space : this is a web application that visualizes your Spotify listening history as planets in a universe, sized by Last.fm scrobble counts.
 
 ## Features
 - Spotify authentication
