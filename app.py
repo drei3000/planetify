@@ -60,64 +60,91 @@ def serve_js_files(filename):
 
 @app.route('/callback')
 def callback():
-    code = request.args.get('code') # Get the authorization code from the request
+    try:
+        code = request.args.get('code') # Get the authorization code from the request
+        print(f"Callback received with code: {code[:10]}..." if code else "No code received")
+        
+        # Check if this is a fetch request by looking for specific fetch headers
+        is_fetch_request = (
+            'application/json' in request.headers.get('Accept', '') or
+            request.headers.get('X-Requested-With') == 'XMLHttpRequest' or
+            'fetch' in request.headers.get('Sec-Fetch-Mode', '').lower() or
+            request.args.get('fetch') == 'true'  # Add explicit parameter
+        )
+        
+        print(f"Is fetch request: {is_fetch_request}")
+        
+        # If this is a browser redirect from Spotify (not a fetch request), redirect to main page with code
+        if not is_fetch_request:
+            return redirect(f'/?code={code}')
+        
+        # Use dynamic redirect URI to match what JavaScript sent
+        # Force HTTPS for Railway production
+        url_root = request.url_root
+        if 'railway.app' in request.host or 'herokuapp.com' in request.host:
+            url_root = url_root.replace('http://', 'https://')
+        
+        dynamic_redirect_uri = url_root.rstrip('/') + '/callback'
+        print(f"Dynamic redirect URI: {dynamic_redirect_uri}")
+        
+        if not code:
+            print("Error: No code provided")
+            return jsonify({'error': 'No code provided'}), 400
+
+        if not SPOTIFY_CLIENT_ID or not SPOTIFY_CLIENT_SECRET:
+            print("Error: Missing Spotify credentials")
+            return jsonify({'error': 'Server configuration error'}), 500
+
+        token_url = 'https://accounts.spotify.com/api/token'
+
+        # payload to exchange the authorization code for an access token
+        payload = {
+            'grant_type': 'authorization_code',
+            'code': code,
+            'redirect_uri': dynamic_redirect_uri,  # Use dynamic URI instead of env variable
+            'client_id': SPOTIFY_CLIENT_ID,
+            'client_secret': SPOTIFY_CLIENT_SECRET
+        }
+
+        headers = {'Content-Type': 'application/x-www-form-urlencoded'}
      
-    # Check if this is a fetch request by looking for specific fetch headers
-    is_fetch_request = (
-        'application/json' in request.headers.get('Accept', '') or
-        request.headers.get('X-Requested-With') == 'XMLHttpRequest' or
-        'fetch' in request.headers.get('Sec-Fetch-Mode', '').lower() or
-        request.args.get('fetch') == 'true'  # Add explicit parameter
-    )
-    
-    # If this is a browser redirect from Spotify (not a fetch request), redirect to main page with code
-    if not is_fetch_request:
-        return redirect(f'/?code={code}')
-    
-    
-    # Use dynamic redirect URI to match what JavaScript sent
-    # Force HTTPS for Railway production
-    url_root = request.url_root
-    if 'railway.app' in request.host:
-        url_root = url_root.replace('http://', 'https://')
-    
-    dynamic_redirect_uri = url_root.rstrip('/') + '/callback'
-    print(f"Dynamic redirect URI: {dynamic_redirect_uri}")
-    
-    if not code:
-        print("Error: No code provided")
-        return jsonify({'error': 'No code provided'}), 400
+        print("Making token exchange request to Spotify...")
+        response = requests.post(token_url, data=payload, headers=headers, timeout=10) # Make the POST request to get the token
+        
+        print(f"Token response status: {response.status_code}")
+        
+        if response.status_code != 200:
+            error_details = response.text
+            try:
+                error_json = response.json()
+                error_details = error_json
+            except:
+                pass
+            print(f"Token exchange failed: {error_details}")
+            return jsonify({'error': 'Failed to get token', 'details': error_details}), 400
 
-    token_url = 'https://accounts.spotify.com/api/token'
-
-    # payload to exchange the authorization code for an access token
-    payload = {
-        'grant_type': 'authorization_code',
-        'code': code,
-        'redirect_uri': dynamic_redirect_uri,  # Use dynamic URI instead of env variable
-        'client_id': SPOTIFY_CLIENT_ID,
-        'client_secret': SPOTIFY_CLIENT_SECRET
-    }
-
-    headers = {'Content-Type': 'application/x-www-form-urlencoded'}
- 
-    response = requests.post(token_url, data=payload, headers=headers) # Make the POST request to get the token
-    
-    if response.status_code != 200:
-        return jsonify({'error': 'Failed to get token', 'details': response.json()}), 400
-
-    return jsonify(response.json()) # Return the token response as JSON
+        token_data = response.json()
+        print("Token exchange successful")
+        return jsonify(token_data) # Return the token response as JSON
+        
+    except Exception as e:
+        print(f"Callback error: {str(e)}")
+        return jsonify({'error': 'Internal server error', 'details': str(e)}), 500
 
 
 def create_spotify_client():
-    # Get token from Authorization header
-    auth_header = request.headers.get('Authorization')
-    if not auth_header or not auth_header.startswith('Bearer '):
-        raise Exception("Authorization header with Bearer token is required")
-    
-    token = auth_header.split(' ', 1)[1]
-    return spotipy.Spotify(auth=token)
-
+    try:
+        # Get token from Authorization header
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
+            raise Exception("Authorization header with Bearer token is required")
+        
+        token = auth_header.split(' ', 1)[1]
+        print(f"Creating Spotify client with token: {token[:10]}...")
+        return spotipy.Spotify(auth=token)
+    except Exception as e:
+        print(f"Error creating Spotify client: {str(e)}")
+        raise
 
 # Get scrobble count from Last.fm API
 def get_last_fm_scrobble_count(artist_name):
@@ -166,25 +193,40 @@ def download_image(image_url, artist_name):
  
 # Get info from spotify API
 def get_current_user_artists():
-    sp = create_spotify_client()
-    result = sp.current_user_top_artists(limit=50, time_range='long_term')
-    
-    # Get artists and scrobble counts 
-    artist_stats = []
-    for artist in result['items']:
-        # Get the largest image URL (first one is usually the largest)
-        image_url = artist['images'][0]['url'] if artist['images'] else None
-        local_image_path = download_image(image_url, artist['name'])
+    try:
+        sp = create_spotify_client()
+        print("Fetching user's top artists from Spotify...")
+        result = sp.current_user_top_artists(limit=50, time_range='long_term')
+        
+        # Get artists and scrobble counts 
+        artist_stats = []
+        for artist in result['items']:
+            try:
+                # Get the largest image URL (first one is usually the largest)
+                image_url = artist['images'][0]['url'] if artist['images'] else None
+                local_image_path = download_image(image_url, artist['name'])
 
-        artist_stats.append({
-            'name': artist['name'],
-            'scrobble_count': get_last_fm_scrobble_count(artist['name']),
-            'local_image_path': local_image_path
-        })
-    
-
-    
-    return sorted(artist_stats, key=lambda x: x['scrobble_count'],)
+                scrobble_count = get_last_fm_scrobble_count(artist['name'])
+                
+                artist_stats.append({
+                    'name': artist['name'],
+                    'scrobble_count': scrobble_count,
+                    'local_image_path': local_image_path
+                })
+                
+                print(f"Processed artist: {artist['name']} - {scrobble_count} scrobbles")
+                
+            except Exception as e:
+                print(f"Error processing artist {artist.get('name', 'unknown')}: {str(e)}")
+                # Continue with other artists even if one fails
+                continue
+        
+        print(f"Successfully processed {len(artist_stats)} artists")
+        return sorted(artist_stats, key=lambda x: x['scrobble_count'], reverse=True)
+        
+    except Exception as e:
+        print(f"Error in get_current_user_artists: {str(e)}")
+        raise
 
 @app.route('/get_data')
 def get_data():
@@ -196,6 +238,58 @@ def get_data():
     except Exception as e:
         print(f"Error in get_data: {str(e)}")
         return jsonify({'error': str(e)}), 500
+
+@app.route('/spotify_config')
+def spotify_config():
+    """Provide Spotify configuration to the frontend"""
+    try:
+        # Determine the correct base URL and ensure HTTPS for production
+        base_url = request.url_root
+        if 'railway.app' in request.host or 'herokuapp.com' in request.host:
+            base_url = base_url.replace('http://', 'https://')
+        
+        redirect_uri = base_url.rstrip('/') + '/callback'
+        
+        if not SPOTIFY_CLIENT_ID:
+            print("Error: SPOTIFY_CLIENT_ID not configured")
+            return jsonify({'error': 'Server configuration error'}), 500
+        
+        config = {
+            'client_id': SPOTIFY_CLIENT_ID,
+            'redirect_uri': redirect_uri
+        }
+        
+        print(f"Providing Spotify config: client_id={SPOTIFY_CLIENT_ID[:10]}..., redirect_uri={redirect_uri}")
+        return jsonify(config)
+        
+    except Exception as e:
+        print(f"Spotify config error: {str(e)}")
+        return jsonify({'error': 'Internal server error', 'details': str(e)}), 500
+
+@app.route('/health')
+def health_check():
+    """Health check endpoint to verify server configuration"""
+    try:
+        config_status = {
+            'spotify_client_id_set': bool(SPOTIFY_CLIENT_ID),
+            'spotify_client_secret_set': bool(SPOTIFY_CLIENT_SECRET),
+            'lastfm_api_key_set': bool(os.getenv('LAST_FM_API_KEY')),
+            'server_host': request.host,
+            'server_url_root': request.url_root,
+            'is_https': request.is_secure,
+            'user_agent': request.headers.get('User-Agent', 'Unknown')
+        }
+        
+        return jsonify({
+            'status': 'healthy',
+            'config': config_status,
+            'timestamp': request.environ.get('REQUEST_TIME', 'unknown')
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'error': str(e)
+        }), 500
 
     
 

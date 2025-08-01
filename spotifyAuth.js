@@ -19,21 +19,71 @@ function getBaseURL() {
 // Exchange authorization code for access token
 async function exchangeCodeForToken(code) {
     try {
+        console.log('Exchanging authorization code for token...');
         const response = await fetch(`${getBaseURL()}/callback?code=${code}&fetch=true`); // Add fetch parameter
+        
+        console.log(`Token exchange response status: ${response.status}`);
+        
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            let errorMessage = `HTTP error! status: ${response.status}`;
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.error || errorMessage;
+                if (errorData.details) {
+                    console.error('Error details:', errorData.details);
+                }
+            } catch (e) {
+                console.error('Could not parse error response as JSON');
+            }
+            throw new Error(errorMessage);
         }
+        
         const data = await response.json(); // wait for json response containing the token
+        console.log('Token exchange response received');
+        
         if (data.access_token) {
             console.log('Storing access token in localStorage');
             localStorage.setItem('spotify_access_token', data.access_token); // store token
             console.log('Token stored successfully');
             return data.access_token;
         } else {
+            console.error('No access token in response:', data);
             throw new Error('No access token in response');
         }
     } catch (error) {
         console.error('Token exchange failed:', error);
+        throw error;
+    }
+}
+
+// Get Spotify configuration from backend
+async function getSpotifyConfig() {
+    try {
+        console.log('Fetching Spotify configuration...');
+        const response = await fetch(`${getBaseURL()}/spotify_config`);
+        
+        console.log(`Spotify config response status: ${response.status}`);
+        
+        if (!response.ok) {
+            let errorMessage = `HTTP error! status: ${response.status}`;
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.error || errorMessage;
+                console.error('Config error details:', errorData.details);
+            } catch (e) {
+                console.error('Could not parse config error response as JSON');
+            }
+            throw new Error(errorMessage);
+        }
+        
+        const config = await response.json();
+        console.log('Spotify configuration received:', { 
+            client_id: config.client_id ? config.client_id.substring(0, 10) + '...' : 'missing',
+            redirect_uri: config.redirect_uri 
+        });
+        return config;
+    } catch (error) {
+        console.error('Failed to get Spotify config:', error);
         throw error;
     }
 }
@@ -49,13 +99,22 @@ window.loginWithSpotify = async function() {
     
     // No token, start OAuth flow
     console.log('Starting Spotify authorization');
-    const authURL = 'https://accounts.spotify.com/authorize' +
-        '?client_id=48969b5b85f64a4da9c58589461cd743' +
-        '&response_type=code' +
-        `&redirect_uri=${encodeURIComponent(getBaseURL() + '/callback')}` +
-        '&scope=user-top-read';
-   
-    window.location.href = authURL; // Redirect to Spotify for authorization
+    
+    try {
+        // Get configuration from backend
+        const config = await getSpotifyConfig();
+        
+        const authURL = 'https://accounts.spotify.com/authorize' +
+            `?client_id=${config.client_id}` +
+            '&response_type=code' +
+            `&redirect_uri=${encodeURIComponent(config.redirect_uri)}` +
+            '&scope=user-top-read';
+       
+        window.location.href = authURL; // Redirect to Spotify for authorization
+    } catch (error) {
+        console.error('Failed to start login process:', error);
+        alert('Failed to start login process. Please try again.');
+    }
 }
 
 // Logout function
@@ -143,7 +202,7 @@ window.onload = function() {
     if (logoutLink) {
         logoutLink.onclick = function(e) {
             e.preventDefault();
-            logoutSpotifyUser();
+            logohutSpotifyUser();
         };
     }
     
