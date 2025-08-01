@@ -222,7 +222,7 @@ def get_current_user_artists():
                 continue
         
         print(f"Successfully processed {len(artist_stats)} artists")
-        return sorted(artist_stats, key=lambda x: x['scrobble_count'], reverse=True)
+        return sorted(artist_stats, key=lambda x: x['scrobble_count'], reverse=False)
         
     except Exception as e:
         print(f"Error in get_current_user_artists: {str(e)}")
