@@ -202,7 +202,7 @@ window.onload = function() {
     if (logoutLink) {
         logoutLink.onclick = function(e) {
             e.preventDefault();
-            logohutSpotifyUser();
+            logoutSpotifyUser();
         };
     }
     
